@@ -1,4 +1,5 @@
 # Desafio DIO: Kali Linux, Medusa e Ambientes Vulneráveis
+
 ## Entendendo o Desafio
 
 Este projeto documenta a implementação de cenários de ataque de força bruta utilizando o Kali Linux e a ferramenta Medusa, em conjunto com ambientes vulneráveis como Metasploitable 2 e DVWA (Damn Vulnerable Web Application). O objetivo é simular ataques, exercitar medidas de prevenção e demonstrar a compreensão dos conceitos de segurança abordados no curso da DIO.
@@ -39,12 +40,12 @@ Ambas as VMs foram configuradas com uma **rede interna (Host-Only)** para isolar
 
 **Exemplo de Configuração de IP:**
 
-*   **Kali Linux:** 192.168.56.101
-*   **Metasploitable 2:** 192.168.56.102
+*   **Kali Linux:** 192.168.56.102
+*   **Metasploitable 2:** 192.168.56.101
 
+**`[Espaço para Print da Configuração das VMs no VirtualBox]`**
 
-![Configuração das VMs no VirtualBox](<img width="1535" height="926" alt="image" src="https://github.com/user-attachments/assets/0313cf41-95b6-4589-adc4-f67c04a51d11" />
-)
+![Configuração das VMs no VirtualBox](images/virtualbox_config.png)
 
 ## Cenários de Ataque Simulado
 
@@ -54,7 +55,7 @@ Ambas as VMs foram configuradas com uma **rede interna (Host-Only)** para isolar
 
 O File Transfer Protocol (FTP) é um serviço comum para transferência de arquivos. No entanto, se não for configurado corretamente, pode ser vulnerável a ataques de força bruta, onde um atacante tenta adivinhar credenciais de login usando listas de nomes de usuário e senhas. O Medusa será utilizado para automatizar essas tentativas contra o serviço FTP do Metasploitable 2.
 
-#### Wordlist Utilizada (Exemplo: `users.txt` e `passwords.txt`)
+#### Wordlist Utilizada (Exemplo: `users.txt` e `pass.txt`)
 
 ```
 # users.txt
@@ -77,13 +78,14 @@ msfadmin
 Para realizar o ataque de força bruta no serviço FTP, utilize o seguinte comando no terminal do Kali Linux:
 
 ```bash
-medusa -h 192.168.56.102 -u users.txt -P pass.txt -M ftp
+medusa -h 192.168.56.101 -U users.txt -P pass.txt -M ftp -t 6
 ```
 
 *   `-h`: Endereço IP do alvo (Metasploitable 2).
-*   `-u`: Arquivo contendo a lista de nomes de usuário.
+*   `-U`: Arquivo contendo a lista de nomes de usuário.
 *   `-P`: Arquivo contendo a lista de senhas.
 *   `-M`: Módulo do serviço a ser atacado (ftp).
+*   `-t 6`: Define o uso de 6 threads simultâneas para acelerar o processo de teste.
 
 **`[Espaço para Print da Execução do Medusa - FTP]`**
 
@@ -91,10 +93,10 @@ medusa -h 192.168.56.102 -u users.txt -P pass.txt -M ftp
 
 #### Validação do Acesso
 
-Após a execução bem-sucedida do Medusa, as credenciais válidas serão exibidas. Para validar o acesso, utilize um cliente FTP (como o `ftp` nativo do Linux) ou um navegador web.
+Após a execução bem-sucedida do Medusa, as credenciais válidas serão exibidas como `FOUND`. Para validar o acesso, utilize um cliente FTP (como o `ftp` nativo do Linux) ou um navegador web.
 
 ```bash
-ftp 192.168.56.102
+ftp 192.168.56.101
 ```
 
 **`[Espaço para Print da Validação do Acesso FTP]`**
@@ -108,6 +110,7 @@ ftp 192.168.56.102
 *   **Autenticação por Chave:** Utilizar autenticação baseada em chaves SSH para SFTP (SSH File Transfer Protocol) em vez de senhas.
 *   **Firewall:** Restringir o acesso ao serviço FTP apenas a IPs confiáveis.
 *   **Monitoramento:** Monitorar logs de acesso para detectar tentativas de força bruta.
+*   **Bloqueio por IP:** Bloquear o acesso por IPs de fora da organização.
 
 ### 2. Automação de Tentativas em Formulário Web (DVWA)
 
@@ -115,7 +118,7 @@ ftp 192.168.56.102
 
 O Damn Vulnerable Web Application (DVWA) é uma aplicação web PHP/MySQL que é intencionalmente vulnerável. O cenário de login do DVWA (nível de segurança baixo) é ideal para demonstrar ataques de força bruta em formulários web. O Medusa pode ser configurado para interagir com formulários HTTP POST e tentar múltiplas combinações de usuário e senha.
 
-#### Wordlist Utilizada (Exemplo: `users_web.txt` e `passwords_web.txt`)
+#### Wordlist Utilizada (Exemplo: `users.txt` e `pass.txt`)
 
 ```
 # users.txt
@@ -135,23 +138,22 @@ msfadmin
 
 #### Comando Medusa
 
-Para atacar o formulário de login do DVWA, é necessário entender a estrutura da requisição HTTP POST. No DVWA, a URL de login é `/dvwa/login.php` e os parâmetros são `username`, `password` e `Login`. Além disso, é crucial capturar o cookie de sessão (PHPSESSID) e o token anti-CSRF (user_token) para que as requisições sejam válidas. No entanto, para simplificar o exemplo com Medusa, focaremos nos parâmetros básicos, assumindo que o nível de segurança do DVWA está baixo e não exige o token anti-CSRF para este tipo de ataque (ou que o token é fixo/previsível em algumas configurações).
+Para atacar o formulário de login do DVWA, é necessário entender a estrutura da requisição HTTP POST. No DVWA, a URL de login é `/dvwalogin.php` e os parâmetros são `username`, `password` e `Login`. Além disso, é crucial capturar o cookie de sessão (PHPSESSID) e o token anti-CSRF (user_token) para que as requisições sejam válidas. No entanto, para simplificar o exemplo com Medusa, focaremos nos parâmetros básicos, assumindo que o nível de segurança do DVWA está baixo e não exige o token anti-CSRF para este tipo de ataque (ou que o token é fixo/previsível em algumas configurações).
 
 **Nota:** Para um ataque mais robusto em ambientes reais, ferramentas como o Burp Suite ou scripts Python seriam mais adequadas para lidar com tokens CSRF e cookies de sessão dinâmicos.
 
 ```bash
-mmedusa -h 192.168.56.102 -u users.txt -P pass.txt -M http -m POST -T /dvwa/login.php -D 'username=^USER^&password=^PASS^&Login=Login' -s 200 -e 'Login failed'
+medusa -h 192.168.56.101 -U users.txt -P pass.txt -M http -m PAGE: '/dvwalogin.php' -m FORM: 'username=^USER^&password=^PASS^&Login=Login' -m 'FAIL=Login failed' -t 6
 ```
 
-*   `-h`: Endereço IP do alvo (Metasploitable 2).
-*   `-u`: Arquivo contendo a lista de nomes de usuário.
-*   `-P`: Arquivo contendo a lista de senhas.
-*   `-M http`: Módulo HTTP para ataques web.
-*   `-m POST`: Método HTTP POST.
-*   `-T /dvwa/login.php`: Caminho do recurso (URL) do formulário de login.
-*   `-D 'username=^USER^&password=^PASS^&Login=Login'`: String de dados POST, onde `^USER^` e `^PASS^` são substituídos pelo Medusa.
-*   `-s 200`: Código de status HTTP esperado para uma resposta bem-sucedida (neste caso, o DVWA redireciona para a página de sucesso após o login).
-*   `-e 'Login failed'`: String de erro que indica uma tentativa de login falha. O Medusa procurará por essa string para determinar se o login foi bem-sucedido ou não.
+*   `-h 192.168.56.101`: Endereço IP do alvo (Metasploitable 2).
+*   `-U users.txt`: Arquivo contendo a lista de nomes de usuário.
+*   `-P pass.txt`: Arquivo contendo a lista de senhas.
+*   `-M http`: Módulo de ataque para o protocolo HTTP.
+*   `-m PAGE: '/dvwalogin.php'`: Especifica o caminho exato da página de login no servidor web.
+*   `-m FORM: 'username=^USER^&password=^PASS^&Login=Login'`: Define os campos do formulário e como os dados devem ser enviados.
+*   `-m 'FAIL=Login failed'`: Define a string de erro que o Medusa deve identificar para saber que a tentativa de login falhou.
+*   `-t 6`: Define o uso de 6 threads simultâneas para acelerar o processo de teste.
 
 **`[Espaço para Print da Execução do Medusa - DVWA]`**
 
@@ -182,13 +184,15 @@ O Server Message Block (SMB) é um protocolo de rede para compartilhamento de ar
 
 #### Enumeração de Usuários (Ferramenta: `enum4linux`)
 
-Antes de realizar o *password spraying*, é fundamental enumerar os usuários válidos no sistema SMB. A ferramenta `enum4linux` é excelente para essa finalidade.
+Antes de realizar o *password spraying*, é fundamental enumerar os usuários válidos no sistema SMB. A ferramenta `enum4linux` é excelente para essa finalidade. Antes de realizar o password spraying, foi realizada uma enumeração completa no serviço SMB para identificar usuários válidos e informações do sistema.
 
 ```bash
-enum4linux -U 192.168.56.102
+enum4linux -a 192.168.56.101 | tee enum4_output.txt
 ```
 
-*   `-U`: Opção para enumerar usuários.
+*   `-a`: Realiza uma enumeração completa (Do All), incluindo usuários, compartilhamentos e políticas.
+*   `| tee enum4_output.txt`: Redireciona a saída do comando para ser exibida no terminal e salva simultaneamente no arquivo especificado.
+
 
 **`[Espaço para Print da Enumeração de Usuários com enum4linux]`**
 
@@ -199,7 +203,7 @@ enum4linux -U 192.168.56.102
 Abaixo, um exemplo resumido da saída do `enum4linux`, mostrando a enumeração de usuários:
 
 ```
-[+] Enumerating users on 192.168.56.102
+[+] Enumerating users on 192.168.56.101
 [+] Getting all users and SIDs
 S-1-5-21-3623811015-3361044348-30300820-1000  user (Local User)
 S-1-5-21-3623811015-3361044348-30300820-1001  msfadmin (Local User)
@@ -231,13 +235,15 @@ msfadmin
 Com a lista de usuários enumerados (por exemplo, `user`, `msfadmin`, `service`), podemos usar o Medusa para realizar o *password spraying*.
 
 ```bash
-medusa -h 192.168.56.102 -U smb_users.txt -P senhas_spray.txt -M smb
+medusa -h 192.168.56.101 -U smb_users.txt -P senhas_spray.txt -M smbnt -t 2 -T 50
 ```
 
-*   `-h`: Endereço IP do alvo (Metasploitable 2).
-*   `-U`: Arquivo contendo a lista de nomes de usuário (`smb_users.txt`, obtidos via `enum4linux`).
-*   `-P`: Arquivo contendo a lista de senhas comuns.
-*   `-M smb`: Módulo do serviço a ser atacado (smb).
+*   `-h 192.168.56.101`: Endereço IP do alvo (Metasploitable 2).
+*   `-U smb_users.txt`: Arquivo contendo a lista de nomes de usuário obtidos na enumeração.
+*   `-P senhas_spray.txt`: Arquivo contendo a lista de senhas comuns para o teste de spraying.
+*   `-M smbnt`: Módulo específico para ataque ao serviço SMB (NTLM).
+*   `-t 2`: Define o uso de 2 threads simultâneas.
+*   `-T 50`: Define o número total de conexões simultâneas para o processamento das tarefas.
 
 **`[Espaço para Print da Execução do Medusa - SMB]`**
 
@@ -248,7 +254,7 @@ medusa -h 192.168.56.102 -U smb_users.txt -P senhas_spray.txt -M smb
 Após a identificação das credenciais, utilize o comando `smbclient` para validar o acesso a um compartilhamento SMB.
 
 ```bash
-smbclient -L 192.168.56.102 -U msfadmin%msfadmin
+smbclient -L 192.168.56.101 -U msfadmin%msfadmin
 ```
 
 *   `-L`: Lista os compartilhamentos disponíveis.
