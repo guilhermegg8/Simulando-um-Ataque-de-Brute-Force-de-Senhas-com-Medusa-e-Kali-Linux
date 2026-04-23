@@ -159,7 +159,6 @@ medusa -h 192.168.56.101 -U users.txt -P pass.txt -M http -m PAGE: '/dvwalogin.p
 
 Após a identificação das credenciais, acesse o DVWA via navegador e tente logar com as credenciais encontradas.
 
-**`[Espaço para Print da Validação do Acesso DVWA]`**
 
 ![Validação do Acesso DVWA](images/dvwa_access.png)
 
