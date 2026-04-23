@@ -43,7 +43,6 @@ Ambas as VMs foram configuradas com uma **rede interna (Host-Only)** para isolar
 *   **Kali Linux:** 192.168.56.102
 *   **Metasploitable 2:** 192.168.56.101
 
-**`[Espaço para Print da Configuração das VMs no VirtualBox]`**
 
 ![Configuração das VMs no VirtualBox](images/virtualbox_config.png)
 
@@ -87,7 +86,6 @@ medusa -h 192.168.56.101 -U users.txt -P pass.txt -M ftp -t 6
 *   `-M`: Módulo do serviço a ser atacado (ftp).
 *   `-t 6`: Define o uso de 6 threads simultâneas para acelerar o processo de teste.
 
-**`[Espaço para Print da Execução do Medusa - FTP]`**
 
 ![Execução do Medusa - FTP](images/medusa_ftp.png)
 
@@ -99,7 +97,6 @@ Após a execução bem-sucedida do Medusa, as credenciais válidas serão exibid
 ftp 192.168.56.101
 ```
 
-**`[Espaço para Print da Validação do Acesso FTP]`**
 
 ![Validação do Acesso FTP](images/ftp_access.png)
 
@@ -155,7 +152,6 @@ medusa -h 192.168.56.101 -U users.txt -P pass.txt -M http -m PAGE: '/dvwalogin.p
 *   `-m 'FAIL=Login failed'`: Define a string de erro que o Medusa deve identificar para saber que a tentativa de login falhou.
 *   `-t 6`: Define o uso de 6 threads simultâneas para acelerar o processo de teste.
 
-**`[Espaço para Print da Execução do Medusa - DVWA]`**
 
 ![Execução do Medusa - DVWA](images/medusa_dvwa.png)
 
@@ -193,8 +189,6 @@ enum4linux -a 192.168.56.101 | tee enum4_output.txt
 *   `-a`: Realiza uma enumeração completa (Do All), incluindo usuários, compartilhamentos e políticas.
 *   `| tee enum4_output.txt`: Redireciona a saída do comando para ser exibida no terminal e salva simultaneamente no arquivo especificado.
 
-
-**`[Espaço para Print da Enumeração de Usuários com enum4linux]`**
 
 ![Enumeração de Usuários SMB](images/enum4linux.png)
 
@@ -245,7 +239,6 @@ medusa -h 192.168.56.101 -U smb_users.txt -P senhas_spray.txt -M smbnt -t 2 -T 5
 *   `-t 2`: Define o uso de 2 threads simultâneas.
 *   `-T 50`: Define o número total de conexões simultâneas para o processamento das tarefas.
 
-**`[Espaço para Print da Execução do Medusa - SMB]`**
 
 ![Execução do Medusa - SMB](images/medusa_smb.png)
 
@@ -260,7 +253,6 @@ smbclient -L 192.168.56.101 -U msfadmin%msfadmin
 *   `-L`: Lista os compartilhamentos disponíveis.
 *   `-U`: Nome de usuário e senha (separados por `%`).
 
-**`[Espaço para Print da Validação do Acesso SMB]`**
 
 ![Validação do Acesso SMB](images/smb_access.png)
 
